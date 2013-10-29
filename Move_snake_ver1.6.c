@@ -494,6 +494,169 @@ int collide (Queue *s1, Queue *s2, char dir1, char dir2)
 	return 0;
 }	
 
+int play(Queue *s1, Queue *s2, coord* snake1, coord *snake2, char *snake1dir, char *snake2dir, coord *reward )
+{
+		int ch;
+		int set_dir1=0;
+		int set_dir2=0;
+		ch=getch();						
+		switch (ch)
+		{
+				
+						
+				case (int)'w': if ((*snake1dir=='r')||(*snake1dir=='l'))
+							{
+								if (snake1->y==0)
+									snake1->y = HEIGHT;
+								else
+									snake1->y--;
+								*snake1dir = 'u';
+								set_dir1=1;
+							}
+							break;
+				
+				case (int)'s':  if ((*snake1dir=='r')||(*snake1dir=='l'))
+							{
+								if (snake1->y==HEIGHT)
+									snake1->y = 0;
+								else
+									snake1->y++;
+								set_dir1=1;
+								*snake1dir = 'd';
+							}
+							break;
+								
+				case (int)'a': if ((*snake1dir=='u')||(*snake1dir=='d'))
+							{
+								if (snake1->x==0)
+									snake1->x = WIDTH;
+								else
+									snake1->x--;
+								set_dir1=1;
+								*snake1dir = 'l';
+							}
+							break;
+				
+				case (int)'d': if ((*snake1dir=='u')||(*snake1dir=='d'))
+							{
+								if (snake1->x==WIDTH)
+									snake1->x = 0;
+								else
+									snake1->x++;
+								set_dir1=1;
+								*snake1dir = 'r';
+							}
+							break;
+				case 259: if ((*snake2dir=='r')||(*snake2dir=='l'))
+							{
+								if (snake2->y==0)
+									snake2->y = HEIGHT;
+								else
+									snake2->y--;
+								*snake2dir = 'u';
+								set_dir2=1;
+							}
+							break;
+				case 258 : if ((*snake2dir=='r')||(*snake2dir=='l'))
+							{
+								if (snake2->y==HEIGHT)
+									snake2->y = 0;
+								else
+									snake2->y++;
+								set_dir2=1;
+								*snake2dir = 'd';
+							}
+							break;
+				case 260 : if ((*snake2dir=='u')||(*snake2dir=='d'))
+							{
+								if (snake2->x==0)
+									snake2->x = WIDTH;
+								else
+									snake2->x--;
+								set_dir2=1;
+								*snake2dir = 'l';
+							}
+							break;		
+							
+				case 261: if ((*snake2dir=='u')||(*snake2dir=='d'))
+							{
+								if (snake2->x==WIDTH)
+									snake2->x = 0;
+								else
+									snake2->x++;
+								set_dir2=1;
+								*snake2dir = 'r';
+							}
+							break;
+			}
+
+		if (set_dir1==0)
+		{
+			switch(*snake1dir)
+			{
+				case 'l': if (snake1->x==0)
+							snake1->x = WIDTH;
+						else
+							snake1->x--;
+						break;
+				case 'r': if (snake1->x==WIDTH)
+							snake1->x = 0;
+						else
+							snake1->x++;
+						break;
+				case 'u': if (snake1->y==0)
+							snake1->y = HEIGHT;
+						else
+							snake1->y--;
+						break;
+				case 'd': if (snake1->y==HEIGHT)
+							snake1->y = 0;
+						else
+							snake1->y++;
+						break;
+			}
+		}
+		if (set_dir2==0)
+		{
+			switch(*snake2dir)
+			{
+				case 'l': if (snake2->x==0)
+							snake2->x = WIDTH;
+						else
+							snake2->x--;
+						break;
+				case 'r': if (snake2->x==WIDTH)
+							snake2->x = 0;
+						else
+							snake2->x++;
+						break;
+				case 'u': if (snake2->y==0)
+							snake2->y = HEIGHT;
+						else
+							snake2->y--;
+						break;
+				case 'd': if (snake2->y==HEIGHT)
+							snake2->y = 0;
+						else
+							snake2->y++;
+						break;
+			}
+		}
+		
+		s1 = queue_push(s1, *snake1);
+		s2 = queue_push(s2, *snake2);
+		if ((reward->x!=snake1->x)||(reward->y!=snake1->y))
+			s1 = queue_pop(s1);
+		else 
+			*reward = mk_reward(s1, s2);
+		
+		if ((reward->x!=snake2->x)||(reward->y!=snake2->y))
+			s2 = queue_pop(s2);
+		else 
+			*reward = mk_reward(s1, s2);
+
+	return 0;
+}
 
 void main()
 {
@@ -506,12 +669,14 @@ void main()
 	long long int runno=0;	
 	struct timeval tim;  
 	timeout(100);
-	int snake1y = 0 , snake2y = 0;	// The number of rows the snake head is below the top left
-	int snake1x = 0 , snake2x = WIDTH;			
+//	int snake1y = 0 , snake2y = 0;	// The number of rows the snake head is below the top left
+//	int snake1x = 0 , snake2x = WIDTH;			
+	coord snake1 = make_coord(0, 0);
+	coord snake2 = make_coord(WIDTH, 0);
 	Queue *s1 = queue_new();
-	s1 = queue_push(s1, make_coord(snake1x, snake1y));
+	s1 = queue_push(s1, snake1);
 	Queue *s2 = queue_new();
-	s2 = queue_push(s2, make_coord(snake2x, snake2y));
+	s2 = queue_push(s2, snake2);
 	keypad(stdscr, TRUE);
 	refresh();
 	int ch;
@@ -534,8 +699,8 @@ void main()
 	double t2=1000,t1=0;
 	do 
 	{
-		set_dir1=0;
-		set_dir2=0;
+//		set_dir1=0;
+//		set_dir2=0;
 		gettimeofday(&tim, NULL);
 		runno++;
 		if(b.isactive)
@@ -557,17 +722,19 @@ void main()
 			b.isactive=  1 ;
 			b.duration= 0 ;
 		
-		//	b.topleft.x = (rand()%WIDTH) ;
-		//	b.topleft.y= (rand()%HEIGHT)  ;
+			b.topleft.x = (rand()%WIDTH) ;
+			b.topleft.y= (rand()%HEIGHT)  ;
 		
-		init_bombregion(&br,b);
+			init_bombregion(&br,b);
 		}
 			
 			        	
 		t1 = tim.tv_sec*1000 + ( tim.tv_usec / 1000.0 );  
 		timeout(100); 		
-				
-		ch=getch();						
+		ch = play(s1, s2, &snake1, &snake2, &snake1dir, &snake2dir, &reward); 		
+		if (ch==1)
+			break;
+	/*	ch=getch();						
 		switch (ch)
 		{
 				
@@ -722,7 +889,7 @@ void main()
 			s2 = queue_pop(s2);
 		else 
 			reward = mk_reward(s1, s2);
-		int col = collide(s1, s2, snake1dir, snake2dir);
+	*/	int col = collide(s1, s2, snake1dir, snake2dir);
 	//	int col=0;
 		end_game(col,s1,s2);	/*
 		if (col==2)
