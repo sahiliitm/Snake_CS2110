@@ -494,13 +494,21 @@ int collide (Queue *s1, Queue *s2, char dir1, char dir2)
 	return 0;
 }	
 
-int auto_collide (Queue *s2, coord auto_head)
+int auto_collide (Queue *s2, Queue *s1, coord auto_head)
 {
 	int x, y;
-	coord head_s2 = get_head(s2);
+//	coord head_s2 = get_head(s2);
 //	if ( ( auto_head.x == head_s2.x ) && ( auto_head.y == head_s2.y ) )
 //			return 1;									// Both get penalised/Both made a mistake
 	Node * temp = s2->tail;
+	while (temp!=NULL)
+	{
+		
+		if ((temp->data.x==auto_head.x) && (temp->data.y==auto_head.y))
+			return 1;
+		temp = temp->next;	
+	}
+	temp = s1->tail;
 	while (temp!=NULL)
 	{
 		
@@ -546,7 +554,7 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, coord *reward, bomb *b)
 			new_head.y = HEIGHT;
 		else
 			new_head.y--;
-		if (auto_collide(s2, new_head)==1)
+		if (auto_collide(s2,s1, new_head)==1)
 			points[0]=(HEIGHT+WIDTH+2)/2;
 		else
 			points[0]=auto_dist_to_reward(new_head, *reward);
@@ -558,7 +566,7 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, coord *reward, bomb *b)
 			new_head.x = 0;
 		else
 			new_head.x++;
-		if (auto_collide(s2, new_head)==1)
+		if (auto_collide(s2,s1, new_head)==1)
 			points[1]=(HEIGHT+WIDTH+2)/2;
 		else
 			points[1]=auto_dist_to_reward(new_head, *reward);
@@ -570,7 +578,7 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, coord *reward, bomb *b)
 			new_head.y = 0;
 		else
 			new_head.y++;
-		if (auto_collide(s2, new_head)==1)
+		if (auto_collide(s2,s1, new_head)==1)
 			points[2]=(HEIGHT+WIDTH+2)/2;
 		else
 			points[2]=auto_dist_to_reward(new_head, *reward);
@@ -582,7 +590,7 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, coord *reward, bomb *b)
 			new_head.x = WIDTH;
 		else
 			new_head.x--;
-		if (auto_collide(s2, new_head)==1)
+		if (auto_collide(s2, s1, new_head)==1)
 			points[3]=(HEIGHT+WIDTH+2)/2;
 		else
 			points[3]=auto_dist_to_reward(new_head, *reward);
@@ -630,7 +638,9 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, coord *reward, bomb *b)
 		s1 = queue_pop(s1);
 	else 
 		*reward = mk_reward(s1, s2);
+//	usleep(40000);
 	return 0;		
+	
 }
 
 
