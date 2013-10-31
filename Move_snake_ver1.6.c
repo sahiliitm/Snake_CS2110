@@ -494,6 +494,233 @@ int collide (Queue *s1, Queue *s2, char dir1, char dir2)
 	return 0;
 }	
 
+int auto_collide (Queue *s2, coord auto_head)
+{
+	int x, y;
+	coord head_s2 = get_head(s2);
+//	if ( ( auto_head.x == head_s2.x ) && ( auto_head.y == head_s2.y ) )
+//			return 1;									// Both get penalised/Both made a mistake
+	Node * temp = s2->tail;
+	while (temp!=NULL)
+	{
+		
+		if ((temp->data.x==auto_head.x) && (temp->data.y==auto_head.y))
+			return 1;
+		temp = temp->next;	
+	}
+	return 0;
+}	
+	
+int auto_dist_to_reward(coord auto_head, coord reward)
+{
+	int distx=0, disty=0;
+	distx+=(auto_head.x>reward.x)?(auto_head.x-reward.x):(reward.x-auto_head.x);
+	if (distx>WIDTH/2)
+		distx = WIDTH-distx;
+	disty+=(auto_head.y>reward.y)?(auto_head.y-reward.y):(reward.y-auto_head.y);
+	if (disty>HEIGHT/2)
+		disty = HEIGHT-disty;
+	return (distx+disty);
+}
+
+int auto_move(Queue *s1, Queue *s2, char *snake1dir, coord *reward, bomb *b)
+{
+	coord auto_head = get_head(s1);
+	coord new_head = auto_head;
+	int points[4]={-1, -1, -1, -1};
+	switch(*snake1dir)
+	{
+		case 'u': points[2]=(HEIGHT+WIDTH+2)/2;
+				break;
+		case 'r': points[3]=(HEIGHT+WIDTH+2)/2;
+				break;
+		case 'd': points[0]=(HEIGHT+WIDTH+2)/2;
+				break;
+		case 'l': points[1]=(HEIGHT+WIDTH+2)/2;
+				break;
+	}
+	int i;
+	if (points[0]!=(HEIGHT+WIDTH+2)/2)
+	{
+		if (new_head.y==0)
+			new_head.y = HEIGHT;
+		else
+			new_head.y--;
+		if (auto_collide(s2, new_head)==1)
+			points[0]=(HEIGHT+WIDTH+2)/2;
+		else
+			points[0]=auto_dist_to_reward(new_head, *reward);
+	}
+	new_head=auto_head;					
+	if (points[1]!=(HEIGHT+WIDTH+2)/2)
+	{
+		if (new_head.x==WIDTH)
+			new_head.x = 0;
+		else
+			new_head.x++;
+		if (auto_collide(s2, new_head)==1)
+			points[1]=(HEIGHT+WIDTH+2)/2;
+		else
+			points[1]=auto_dist_to_reward(new_head, *reward);
+	}					
+	new_head=auto_head;
+	if (points[2]!=(HEIGHT+WIDTH+2)/2)
+	{
+		if (new_head.y==HEIGHT)
+			new_head.y = 0;
+		else
+			new_head.y++;
+		if (auto_collide(s2, new_head)==1)
+			points[2]=(HEIGHT+WIDTH+2)/2;
+		else
+			points[2]=auto_dist_to_reward(new_head, *reward);
+	}					
+	new_head=auto_head;
+	if (points[3]!=(HEIGHT+WIDTH+2)/2)
+	{
+		if (new_head.x==0)
+			new_head.x = WIDTH;
+		else
+			new_head.x--;
+		if (auto_collide(s2, new_head)==1)
+			points[3]=(HEIGHT+WIDTH+2)/2;
+		else
+			points[3]=auto_dist_to_reward(new_head, *reward);
+	}	
+	int min = points[0];
+	int pos=0;				
+	for (i=1; i<4; i++)
+	{
+		if (min>points[i])
+		{
+			min=points[i];
+			pos=i;
+		}
+	}
+	new_head=auto_head;
+	switch(pos)
+	{
+		case 0:	if (new_head.y==0)
+					new_head.y = HEIGHT;
+				else
+					new_head.y--;
+				*snake1dir='u';
+				break;
+		case 1: if (new_head.x==WIDTH)
+					new_head.x = 0;
+				else
+					new_head.x++;
+				*snake1dir='r';
+				break;
+		case 2: if (new_head.y==HEIGHT)
+					new_head.y = 0;
+				else
+					new_head.y++;
+				*snake1dir='d';
+				break;
+		case 3: if (new_head.x==0)
+					new_head.x = WIDTH;
+				else
+					new_head.x--;
+				*snake1dir='l';
+				break;
+	}
+	s1 = queue_push(s1, new_head);
+	if ((reward->x!=new_head.x)||(reward->y!=new_head.y))
+		s1 = queue_pop(s1);
+	else 
+		*reward = mk_reward(s1, s2);
+	return 0;		
+}
+
+
+int play_one(Queue *s1, Queue *s2, coord *snake2, char *snake2dir, coord *reward)
+{
+		int ch;
+		int set_dir2=0;
+		ch=getch();						
+		switch (ch)
+		{
+				case (int) 'q': return 1;
+				
+				case 259: if ((*snake2dir=='r')||(*snake2dir=='l'))
+							{
+								if (snake2->y==0)
+									snake2->y = HEIGHT;
+								else
+									snake2->y--;
+								*snake2dir = 'u';
+								set_dir2=1;
+							}
+							break;
+				case 258 : if ((*snake2dir=='r')||(*snake2dir=='l'))
+							{
+								if (snake2->y==HEIGHT)
+									snake2->y = 0;
+								else
+									snake2->y++;
+								set_dir2=1;
+								*snake2dir = 'd';
+							}
+							break;
+				case 260 : if ((*snake2dir=='u')||(*snake2dir=='d'))
+							{
+								if (snake2->x==0)
+									snake2->x = WIDTH;
+								else
+									snake2->x--;
+								set_dir2=1;
+								*snake2dir = 'l';
+							}
+							break;		
+							
+				case 261: if ((*snake2dir=='u')||(*snake2dir=='d'))
+							{
+								if (snake2->x==WIDTH)
+									snake2->x = 0;
+								else
+									snake2->x++;
+								set_dir2=1;
+								*snake2dir = 'r';
+							}
+							break;
+			}
+		if (set_dir2==0)
+		{
+			switch(*snake2dir)
+			{
+				case 'l': if (snake2->x==0)
+							snake2->x = WIDTH;
+						else
+							snake2->x--;
+						break;
+				case 'r': if (snake2->x==WIDTH)
+							snake2->x = 0;
+						else
+							snake2->x++;
+						break;
+				case 'u': if (snake2->y==0)
+							snake2->y = HEIGHT;
+						else
+							snake2->y--;
+						break;
+				case 'd': if (snake2->y==HEIGHT)
+							snake2->y = 0;
+						else
+							snake2->y++;
+						break;
+			}
+		}
+		
+		s2 = queue_push(s2, *snake2);
+		if ((reward->x!=snake2->x)||(reward->y!=snake2->y))
+			s2 = queue_pop(s2);
+		else 
+			*reward = mk_reward(s1, s2);
+
+	return 0;
+}
+
 int play(Queue *s1, Queue *s2, coord* snake1, coord *snake2, char *snake1dir, char *snake2dir, coord *reward )
 {
 		int ch;
@@ -502,8 +729,8 @@ int play(Queue *s1, Queue *s2, coord* snake1, coord *snake2, char *snake1dir, ch
 		ch=getch();						
 		switch (ch)
 		{
+				case (int)'q': return 1;
 				
-						
 				case (int)'w': if ((*snake1dir=='r')||(*snake1dir=='l'))
 							{
 								if (snake1->y==0)
@@ -731,201 +958,13 @@ void main()
 			        	
 		t1 = tim.tv_sec*1000 + ( tim.tv_usec / 1000.0 );  
 		timeout(100); 		
-		ch = play(s1, s2, &snake1, &snake2, &snake1dir, &snake2dir, &reward); 		
+		ch = play_one(s1, s2, &snake2, &snake2dir, &reward); 		
 		if (ch==1)
 			break;
-	/*	ch=getch();						
-		switch (ch)
-		{
-				
-						
-				case (int)'w': if ((snake1dir=='r')||(snake1dir=='l'))
-							{
-								if (snake1y==0)
-									snake1y = HEIGHT;
-								else
-									snake1y--;
-								snake1dir = 'u';
-								set_dir1=1;
-							}
-							break;
-				
-				case (int)'s':  if ((snake1dir=='r')||(snake1dir=='l'))
-							{
-								if (snake1y==HEIGHT)
-									snake1y = 0;
-								else
-									snake1y++;
-								set_dir1=1;
-								snake1dir = 'd';
-							}
-							break;
-								
-				case (int)'a': if ((snake1dir=='u')||(snake1dir=='d'))
-							{
-								if (snake1x==0)
-									snake1x = WIDTH;
-								else
-									snake1x--;
-								set_dir1=1;
-								snake1dir = 'l';
-							}
-							break;
-				
-				case (int)'d': if ((snake1dir=='u')||(snake1dir=='d'))
-							{
-								if (snake1x==WIDTH)
-									snake1x = 0;
-								else
-									snake1x++;
-								set_dir1=1;
-								snake1dir = 'r';
-							}
-							break;
-				case 259: if ((snake2dir=='r')||(snake2dir=='l'))
-							{
-								if (snake2y==0)
-									snake2y = HEIGHT;
-								else
-									snake2y--;
-								snake2dir = 'u';
-								set_dir2=1;
-							}
-							break;
-				case 258 : if ((snake2dir=='r')||(snake2dir=='l'))
-							{
-								if (snake2y==HEIGHT)
-									snake2y = 0;
-								else
-									snake2y++;
-								set_dir2=1;
-								snake2dir = 'd';
-							}
-							break;
-				case 260 : if ((snake2dir=='u')||(snake2dir=='d'))
-							{
-								if (snake2x==0)
-									snake2x = WIDTH;
-								else
-									snake2x--;
-								set_dir2=1;
-								snake2dir = 'l';
-							}
-							break;		
-							
-				case 261: if ((snake2dir=='u')||(snake2dir=='d'))
-							{
-								if (snake2x==WIDTH)
-									snake2x = 0;
-								else
-									snake2x++;
-								set_dir2=1;
-								snake2dir = 'r';
-							}
-							break;
-			}
-
-		if (set_dir1==0)
-		{
-			switch(snake1dir)
-			{
-				case 'l': if (snake1x==0)
-							snake1x = WIDTH;
-						else
-							snake1x--;
-						break;
-				case 'r': if (snake1x==WIDTH)
-							snake1x = 0;
-						else
-							snake1x++;
-						break;
-				case 'u': if (snake1y==0)
-							snake1y = HEIGHT;
-						else
-							snake1y--;
-						break;
-				case 'd': if (snake1y==HEIGHT)
-							snake1y = 0;
-						else
-							snake1y++;
-						break;
-			}
-		}
-		if (set_dir2==0)
-		{
-			switch(snake2dir)
-			{
-				case 'l': if (snake2x==0)
-							snake2x = WIDTH;
-						else
-							snake2x--;
-						break;
-				case 'r': if (snake2x==WIDTH)
-							snake2x = 0;
-						else
-							snake2x++;
-						break;
-				case 'u': if (snake2y==0)
-							snake2y = HEIGHT;
-						else
-							snake2y--;
-						break;
-				case 'd': if (snake2y==HEIGHT)
-							snake2y = 0;
-						else
-							snake2y++;
-						break;
-			}
-		}
-		
-		s1 = queue_push(s1, make_coord(snake1x, snake1y));
-		s2 = queue_push(s2, make_coord(snake2x, snake2y));
-		if ((reward.x!=snake1x)||(reward.y!=snake1y))
-			s1 = queue_pop(s1);
-		else 
-			reward = mk_reward(s1, s2);
-		
-		if ((reward.x!=snake2x)||(reward.y!=snake2y))
-			s2 = queue_pop(s2);
-		else 
-			reward = mk_reward(s1, s2);
-	*/	int col = collide(s1, s2, snake1dir, snake2dir);
+		auto_move(s1, s2, &snake1dir, &reward, &b);
+		int col = collide(s1, s2, snake1dir, snake2dir);
 	//	int col=0;
-		end_game(col,s1,s2);	/*
-		if (col==2)
-		{
-			clear();
-			printscreen(s1, s2, reward,b);	
-			mvprintw(HEIGHT/2, WIDTH/2, "Draw");
-
-			timeout(5000);
-			getch();
-			refresh();
-			break;
-		}
-		else if (col==1)
-		{
-			clear();
-			printscreen(s1, s2, reward,b);	
-			mvprintw(HEIGHT/2, WIDTH/2, "Snake 2 wins!");
-
-			timeout(5000);
-			getch();
-			refresh();
-			break;
-		}
-		else if (col==-1)
-		{
-			clear();
-			printscreen(s1, s2, reward,b);	
-			mvprintw(HEIGHT/2, WIDTH/2, "Snake 1 wins!");
-
-			timeout(5000);
-			getch();
-			refresh();
-			break;
-		}
-		*/
+		end_game(col,s1,s2);	
 		gettimeofday(&tim, NULL);  
     		double t2 = tim.tv_sec*1000.0 + ( tim.tv_usec/1000.0  );		
 		
