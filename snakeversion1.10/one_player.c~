@@ -1,13 +1,28 @@
+/*
+ * Functions for the one player game- user vs the computer
+ * Written by Mitali Bafna, CS12B044
+ * 			  Sahil Sharma, CS12B060
+ *			  Vidhya Ramaswamy, CS12B061
+ */
+
+
 #include "one_player.h"
 #define MAXREW 4
 
-
+/*
+ * Checks if a position collides with either of the two snakes 
+ * (for the computer to decide which positions it can move into)
+ * Inputs: s2 - human snake
+ *		   s1 - computer snake
+ *		   auto_head - position being checked
+ * Output: 1 - if it collides
+ *		   0 - if the position is empty
+ */
 int auto_collide (Queue *s2, Queue *s1, coord auto_head)
 {
 	int x, y;
-//	coord head_s2 = get_head(s2);
-//	if ( ( auto_head.x == head_s2.x ) && ( auto_head.y == head_s2.y ) )
-//			return 1;									// Both get penalised/Both made a mistake
+
+	//checking if it collides with the human snake
 	Node * temp = s2->tail;
 	while (temp!=NULL)
 	{
@@ -16,6 +31,8 @@ int auto_collide (Queue *s2, Queue *s1, coord auto_head)
 			return 1;
 		temp = temp->next;	
 	}
+	
+	//checking if it collides with the computer snake
 	temp = s1->tail;
 	while (temp!=NULL)
 	{
@@ -26,7 +43,14 @@ int auto_collide (Queue *s2, Queue *s1, coord auto_head)
 	}
 	return 0;
 }	
-	
+
+
+/*
+ * Returns manhattan distance between two coordinates
+ * Inputs: auto_head - coordinate 1
+ 		   rew - coordinate 2
+ * Output: distance between the coordinates
+ */	
 int auto_dist_to_reward(coord auto_head, coord rew)
 {
 	int distx=0, disty=0;
@@ -39,6 +63,16 @@ int auto_dist_to_reward(coord auto_head, coord rew)
 	return (distx+disty);
 }
 
+
+/*
+ * Checks if a position is within the bombregion, when the bomb is active 
+ * (for the computer to decide which positions it can move into)
+ * Inputs: b - bomb
+ 		   br - list of coordinates affected by the bomb
+ 		   auto_head - position being checked
+ * Outputs: 1 - if it is in the bomb
+ 			0 - otherwise
+ */
 int auto_check_bomb(bomb *b, bombregion *br, coord * new_head)
 {
 	int i;
@@ -55,27 +89,26 @@ int auto_check_bomb(bomb *b, bombregion *br, coord * new_head)
 int over[MAXREW];
 int perm[MAXREW];
 
-
-
+/*
+ * Generates all possible permutations of visiting the rewards, and gets the shortest
+ * path length
+ * Inputs: new_head - position of the computer head
+ *		   rew - set of all rewards
+ *		   min_distance - minimum distance through all rewards
+ *		   ctr - which element we are filling in perm[]
+ * Output: nil 
+ */
 void generate_perm(coord *new_head, reward *rew, int *min_distance, int ctr)
 {
 	int i, j;
 	if (ctr==rew->rewnum)
 	{
-//		ctr=0; 
 		int dist = auto_dist_to_reward(*new_head, rew->rewcoord[perm[0]]);
 		for (j=1; j<rew->rewnum; j++)
-		{
 			dist+= auto_dist_to_reward(rew->rewcoord[perm[j-1]], rew->rewcoord[perm[j]]);
-	//		perm[j]=-1;
-		}
 		if (*min_distance>dist)
 			*min_distance=dist;
-		mvprintw(HEIGHT, 0, "%d,%d %d", perm[0], perm[1], dist);
-			refresh();
-			timeout(10000000);
-			getch();
-			return;
+		return;
 	}
 	for (i=0; i<rew->rewnum; i++)
 	{
@@ -90,12 +123,24 @@ void generate_perm(coord *new_head, reward *rew, int *min_distance, int ctr)
 	}
 }
 
+/*
+ * Computes best possible move for the computer
+ * Inputs: s1 - computer snake
+ 		   s2 - human snake
+ 		   snake1dir - which direction the computer snake is moving in
+ 		   rew - set of all rewards
+ 		   b - bomb
+ 		   br - list of positions affected by the bomb
+ 		   p - points of snake1 and snake2
+ 		   TIME - how fast the game runs
+ */
 int auto_move(Queue *s1, Queue *s2, char *snake1dir, reward *rew, bomb *b, bombregion *br, Points* p, int TIME)
 {
 	coord auto_head = get_head(s1);
 	coord new_head = auto_head;
 	int max_dist = 4*(WIDTH+HEIGHT);
-	// 0 is up, 1 is right 2 is down 3 is left
+
+	// 0 is up, 1 is right, 2 is down, 3 is left for the points array
 	int points[4]={max_dist, max_dist, max_dist, max_dist};
 	switch(*snake1dir)
 	{
@@ -114,7 +159,7 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, reward *rew, bomb *b, bombr
 				over[i]=0;
 				perm[i]=-1;
 			}
-
+	//checking if it can move up
 	if (points[0]!=(max_dist+2))
 	{
 		if (new_head.y==0)
@@ -129,15 +174,15 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, reward *rew, bomb *b, bombr
 		else
 		{
 			generate_perm(&new_head, rew, &points[0], 0);
-		
-			
-			refresh();
-			timeout(10000000);
-//			getch();
-			//usleep(500000);
+			for (i=0; i<rew->rewnum; i++)
+			{
+				over[i]=0;
+				perm[i]=-1;
+			}
 		}
 	}
 	new_head=auto_head;
+	//checking if it can move right
 	if (points[1]!=(max_dist+2))
 	{
 		if (new_head.x==WIDTH)
@@ -151,13 +196,7 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, reward *rew, bomb *b, bombr
 
 		else
 		{
-			generate_perm(&new_head, rew, &points[1], 0);
-		//	mvprintw(HEIGHT, 0, "%d", points[1]);
-			refresh();
-			timeout(10000000);
-	//		getch();
-			//usleep(500000);
-	
+			generate_perm(&new_head, rew, &points[1], 0);	
 			for (i=0; i<rew->rewnum; i++)
 			{
 				over[i]=0;
@@ -167,6 +206,7 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, reward *rew, bomb *b, bombr
 	}	
 						
 	new_head=auto_head;
+	//checking if it can move down
 	if (points[2]!=(max_dist+2))
 	{
 		if (new_head.y==HEIGHT)
@@ -181,12 +221,6 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, reward *rew, bomb *b, bombr
 		else
 		{
 			generate_perm(&new_head, rew, &points[2], 0);
-			//mvprintw(0, WIDTH, "%d", points[2]);
-			refresh();
-			timeout(10000000);
-	//		getch();
-			//usleep(500000);
-	
 			for (i=0; i<rew->rewnum; i++)
 			{
 				over[i]=0;
@@ -195,6 +229,7 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, reward *rew, bomb *b, bombr
 		}
 	}					
 	new_head=auto_head;
+	//checking if it can move left
 	if (points[3]!=(max_dist+2))
 	{
 		if (new_head.x==0)
@@ -209,12 +244,6 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, reward *rew, bomb *b, bombr
 		else
 		{
 			generate_perm(&new_head, rew, &points[3], 0);
-		//	mvprintw(HEIGHT, WIDTH, "%d", points[3]);
-			refresh();
-			timeout(10000000);
-		//	getch();
-			//usleep(500000);
-	
 			for (i=0; i<rew->rewnum; i++)
 			{
 				over[i]=0;
@@ -224,10 +253,7 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, reward *rew, bomb *b, bombr
 	}	
 	int min = points[0];
 	int pos=0;
-		mvprintw(HEIGHT+3, 0, "%d %d %d %d", points[0],points[1],points[2],points[3]);				
-	refresh();
-		//	getch();
-			
+	//getting best direction
 	for (i=1; i<4; i++)
 	{
 		if (min>points[i])
@@ -238,6 +264,7 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, reward *rew, bomb *b, bombr
 	}
 	new_head=auto_head;
 	timeout(TIME);
+	//setting new position of head
 	switch(pos)
 	{
 		case 0:	if (new_head.y==0)
@@ -267,6 +294,7 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, reward *rew, bomb *b, bombr
 	}
 	s1 = queue_push(s1, new_head);
 	int flag=0;
+	//checking if any rewards were eaten
 		for (i=0; i<rew->rewnum; i++)
 		{
 			if ((rew->rewcoord[i].x==new_head.x)&&(rew->rewcoord[i].y==new_head.y))
@@ -280,16 +308,21 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, reward *rew, bomb *b, bombr
 		if (flag==0)
 			s1 = queue_pop(s1);
 	usleep(TIME*1000);
-	for (i=0; i<MAXREW; i++)
-	{
-		over[i]=0;
-		perm[i]=-1;
-	}
 	return 0;		
 	
 }
 
-
+/*
+ * Allows user to move
+ * Inputs: s1 - computer snake
+ 		   s2 - human snake
+ 		   snake2 - current head of human snake
+ 		   snake2dir - which direction the human snake is moving in
+ 		   r - set of all rewards
+ 		   p - points of snake1 and snake2
+ * Output: 1 - if user wants to quit 
+ 		   0 - otherwise
+ */
 int play_one(Queue *s1, Queue *s2, coord *snake2, char *snake2dir, reward *r,Points* p)
 {
 		int ch;

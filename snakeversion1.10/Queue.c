@@ -4,7 +4,13 @@
 #include<stdio.h>
 #include <sys/time.h>
 
-// Create a new node with data and next element (can be NULL)
+
+/* Purpose  :   Create a new node 
+   Inputs   :    data        -       Data of this node
+            :    *next       -       Next node
+   Output   :    *new_node   -       Node created
+ */    
+ 
 Node* Node_new( coord data, Node* next ){
 	Node* new_node=(Node*)malloc(sizeof(Node));
 	new_node->data=data;
@@ -12,6 +18,12 @@ Node* Node_new( coord data, Node* next ){
 	
 	return new_node;
 }
+
+
+/* Purpose  :   Create a new queue 
+   Output   :    *new_queue   -       Queue created
+ */    
+ 
 
 Queue* queue_new(){
 	Queue* new_queue=(Queue*)malloc(sizeof(Queue));
@@ -22,9 +34,12 @@ Queue* queue_new(){
 }	
 
 
-//Queue UTility functions
-
-//Inserts val to the head of the queue
+/* Purpose  :   Push a node into the queue and make it head  
+   Inputs   :    *q       -       Queue into which node is to be pushed
+            :    val      -       Node to be pushed
+   Output   :    *q       -       Updated Queue
+ */    
+ 
 Queue* queue_push( Queue* q, coord val ){
 	Node* new_node=Node_new(val,NULL);
 	
@@ -39,7 +54,12 @@ Queue* queue_push( Queue* q, coord val ){
 	return q;
 }
 
-// Remove the element at the tail of the snake - also frees memory
+
+/* Purpose  :   Remove the element at the tail of the snake - also frees memory
+   Inputs   :    *q       -       Queue into which node is to be pushed
+   Output   :    *q       -       Updated Queue
+ */ 
+
 Queue* queue_pop( Queue* q ){
 	Node* ptr;
 	if((q->tail)!=NULL){
@@ -59,7 +79,10 @@ Queue* queue_pop( Queue* q ){
 	}
 }
 
-// Deletes the queue, frees memory.
+/* Purpose  :    Deletes the queue, frees memory.
+   Inputs   :    *q       -       Queue 
+ */ 
+
 void queue_delete( Queue* q ){
 	while((q->tail)!=NULL){
 		q=queue_pop(q);
@@ -67,7 +90,13 @@ void queue_delete( Queue* q ){
 //	free(q);
 }
 
-// Returns the element currently at the tail of the snake or the top of the queue.
+
+/* Purpose  :   Returns the element currently at the tail of the snake or the top of the queue.
+   Inputs   :    *q       -       Queue 
+            :    *error   -       For reporting error
+   Output   :    answer   -       Tail of snake
+ */ 
+
 coord snake_tail( Queue* q, int* error ){
 	coord answer;	
 	if(q->tail!=NULL){
@@ -83,7 +112,11 @@ coord snake_tail( Queue* q, int* error ){
 	}	
 }
 
-// Returns the number of elements in the queue
+/* Purpose  :   Returns the number of elements in the queue
+   Inputs   :    *q       -       Queue 
+   Output   :    size     -       Size of snake
+ */ 
+
 int queue_size( Queue* q ){
 	int size=0;
 	Node* next_node=q->tail;
@@ -95,7 +128,10 @@ int queue_size( Queue* q ){
 	return size;
 }
 
-// Prints the elements currently in the queue
+/* Purpose  :   Prints the elements currently in the queue
+   Inputs   :    *q       -       Queue 
+ */ 
+
 void queue_print( Queue* q ){
 	Node* next_node=q->tail;
 	while(next_node!=NULL){
@@ -106,6 +142,12 @@ void queue_print( Queue* q ){
 	refresh();
 }
 
+
+/* Purpose  :   Outputs the head of the snake
+   Inputs   :    *q       -       Queue 
+   output   :    ans      -       Head of snake
+ */ 
+
 coord get_head(Queue *q)
 {
 	coord ans;	
@@ -114,7 +156,12 @@ coord get_head(Queue *q)
 	else return ans;
 }
 
-//Searches for a particular coord in the Queue
+/* Purpose  :   Searches for a particular coord in the Queue
+   Inputs   :    *q       -       Queue 
+            :     r       -       coord to be searched
+   output   :     1       -       If it is found
+                  0       -       Otherwise
+ */ 
 
 int queue_search(Queue * q , coord r )
 {
@@ -127,5 +174,3 @@ int queue_search(Queue * q , coord r )
 	}
 	return 0;
 }
-
-

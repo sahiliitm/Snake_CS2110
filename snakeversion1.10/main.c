@@ -1,3 +1,4 @@
+
 #include<string.h>
 #include<stdlib.h>
 #include "one_player.h"
@@ -10,9 +11,9 @@ void main()
 	initscr();
 	clear();
 	
-	cbreak();	/* Line buffering disabled. pass on everything */
-	//raw();	
+	cbreak();	/* Line buffering disabled. pass on everything */	
 	refresh();
+	
 	start_color();
 	init_pair(1, COLOR_YELLOW, COLOR_BLUE);
 	init_pair(2, COLOR_BLACK , COLOR_RED);	
@@ -27,6 +28,8 @@ void main()
 	init_pair(12, COLOR_RED , COLOR_WHITE);
 	init_pair(13, COLOR_BLUE , COLOR_WHITE);
 	init_pair(14, COLOR_MAGENTA , COLOR_WHITE);
+	
+	//Menu:
 	int len1=5, len2=1;
 	long long int runno=0;	
 	struct timeval tim;  
@@ -77,9 +80,7 @@ void main()
 				break;
 	}
 	
-	
-	
-	
+	//Length of the Snake:
 	if(c=='t')
 	{
 		clear();
@@ -162,11 +163,13 @@ void main()
 				
 	}while(len2>MAXLEN);
 	}
+	
+	//Getting the duration of match:
 	int maxtime=0;
 	char temp[3];
 	int i;
 	clear();
-		mvprintw(HEIGHT/2,WIDTH/2-20,"Enter the Duration of the match (in minutes ):" );
+		mvprintw(HEIGHT/2,WIDTH/2-20,"Enter the Duration of the match (in minutes):" );
 		refresh();
 	do
 		{
@@ -190,10 +193,6 @@ void main()
 	}while(maxtime>MAXTIME);
 	
 	
-	
-	
-	
-	
 	//Inputting number of rewards
 	
 	reward r;
@@ -215,14 +214,10 @@ void main()
 	for( iq=0 ; iq< 4 ; iq++ )
 	r.rewcoord[iq].x = r.rewcoord[iq].y = -1 ;
 	
-	 
 	
-	
-	
+	//Initializing structures and variables
 	timeout(TIME);
 		
-//	int snake1y = 0 , snake2y = 0;	// The number of rows the snake head is below the top left
-//	int snake1x = 0 , snake2x = WIDTH;			
 	noecho();
 	coord snake1 = make_coord(0, 0);
 	coord snake2 = make_coord(WIDTH, HEIGHT);
@@ -255,7 +250,6 @@ void main()
 	int bombx,bomby;
 	Points* p=mk_points();	
 	get_points(s1,s2,p);
-	//printscreen(s1, s2, &reward,&b,p);
 	int call_no=0;
 	bombregion br;	
 	init_bombregion(&br, b);
@@ -268,12 +262,12 @@ void main()
 	ini_time = ini.tv_sec*1000 + ( ini.tv_usec / 1000.0 );  
 	init_reward (s1, s2, &r );
 	
+	//Main loop:
 	do 
 	{
-//		set_dir1=0;
-//		set_dir2=0;
 		gettimeofday(&tim, NULL);
 		
+		//Exploding/Printing of bomb if it is active 
 		runno++;
 		if(b.isactive)
 		{
@@ -298,18 +292,24 @@ void main()
 			
 			        	
 		t1 = tim.tv_sec*1000 + ( tim.tv_usec / 1000.0 );  
+		
+		//If time of the match is over:
 		timeout(TIME); 		
 		if(  (t1-ini_time)/60000 > (double)maxtime )
 			end_game(3,s1, s2,p);
-	
+		
+		//Move the snakes, by taking user input:	
 		if(c=='o')
 			ch = play_one(s1, s2, &snake2, &snake2dir, &r,p); 		
 		else
 			ch =play(s1, s2, &snake1, &snake2, &snake1dir, &snake2dir, &r,p);
+		
 		if (ch==1)
 			break;
 		if ( c=='o')
 			auto_move(s1, s2, &snake1dir, &r, &b,&br,p, TIME);
+		
+		//Check if the 2 snakes collided:
 		int col = collide(s1, s2, snake1dir, snake2dir);
 	
 		end_game(col,s1,s2,p);	
@@ -327,7 +327,6 @@ void main()
 					
 		}		
 			
-		
 		printscreen(s1, s2, &r,&b, &call_no, &br, p,t1,ini_time,maxtime);	
 		refresh();
 	}	

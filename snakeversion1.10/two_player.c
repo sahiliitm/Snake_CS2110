@@ -1,5 +1,15 @@
 #include "two_player.h"
 
+/*
+*Purpose: Moves the 2 snakes according to the user input
+* Inputs: s1,s2: Pointers to the queue containing the snake coordinates
+*         snake1, snake2: Coordinates of heads of the snakes
+*         snake1dir, snake2dir: Initial direction of movement
+*         r: Coordinates of reward
+*         p: Current points of the players
+* Outputs: 1: if user quits game
+		   0: otherwise	
+*/
 int play(Queue *s1, Queue *s2, coord* snake1, coord *snake2, char *snake1dir, char *snake2dir, reward *r,Points* p )
 {
 		int ch;
@@ -9,6 +19,8 @@ int play(Queue *s1, Queue *s2, coord* snake1, coord *snake2, char *snake1dir, ch
 	for (iter=0; iter<2; iter++)
 	{
 		ch=getch();						
+		
+		//Get the new head of the snake:
 		switch (ch)
 		{
 				case (int)'q': return 1;
@@ -151,10 +163,13 @@ int play(Queue *s1, Queue *s2, coord* snake1, coord *snake2, char *snake1dir, ch
 						break;
 			}
 		}
-		
+	
+		//Push the new head onto the queue:
 		s1 = queue_push(s1, *snake1);
 		s2 = queue_push(s2, *snake2);
 		int flag=0, i, check=-1;
+	
+		//Check if the snakes have eaten the reward:
 		for (i=0; i<r->rewnum; i++)
 		{
 			if ((r->rewcoord[i].x==snake2->x)&&(r->rewcoord[i].y==snake2->y))
@@ -165,6 +180,7 @@ int play(Queue *s1, Queue *s2, coord* snake1, coord *snake2, char *snake1dir, ch
 				break;
 			}
 		}
+		//If snake2 has not eaten reward, then pop out its tail from queue:
 		if (flag==0)
 			s2 = queue_pop(s2);
 		else
@@ -182,6 +198,8 @@ int play(Queue *s1, Queue *s2, coord* snake1, coord *snake2, char *snake1dir, ch
 				break;
 			}
 		}
+		
+		//If snake1 has not eaten reward, then pop out its tail from queue:
 		if (flag==0)
 			s1 = queue_pop(s1);
 				

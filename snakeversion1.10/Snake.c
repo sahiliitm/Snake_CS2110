@@ -6,7 +6,11 @@
 #include <sys/time.h>
 #define BOMBCHAR "*"
 
-/* Making a structure of coordinates as given, sort of like a constructor*/
+/* Purpose  :   Initializing and constructing a structure of coordinates(x,y) as given through inputs
+   Inputs   :  x   -   x coordinate    
+            :  y   -   y coordinate 
+   Output   :  c   -   coordinate structure
+*/
 
 coord make_coord(int x,int y)
 {
@@ -16,20 +20,32 @@ coord make_coord(int x,int y)
 	return c;
 }
 
-/* While computing a bomb region with coordinates of the form 2 above row 0 taking modulo gives negative numbers and we try to access 
-invalid board positions hence this function basically works like a x modulo dimention */
+/* Purpose  :   While computing a bomb region with coordinates of the form :  2 above row 0 taking modulo ( a%b) gives negative numbers 
+                and we try to access  invalid board positions hence this function basically works like a :  x modulo dimention 
+   Inputs   :  x               -    input to be reduced modulo dimention   
+            :  dimention       -    modular base to work with
+   Output   :  x + dimention   -    in case x < 0
+               x - dimention   -    when x > dimention
+               x               -    x otherwise
+*/
+
+
 
 int correct_value(int x, int dimention )
 {
 	if( x < 0 )
-		return x + dimention;
-	else if ( x >= dimention)
-		return x - dimention;
+	return x + dimention;
+	else if ( x > dimention)
+	return x - dimention;
 	else
-		return x;
+	return x;
 }	
 
-/* Decide the limits of the bomb region based on the coordinates of the bomb center*/
+/* Purpose  :   Decide the limits of the bomb region based on the coordinates of the bomb center
+   Inputs   :  * br      -    Structure containing the coordinates of all points in bomb region   
+            :    b       -    Structure containing info about the bomb
+  */
+
 
 void init_bombregion( bombregion * br , bomb b)
 {
@@ -72,10 +88,14 @@ void init_bombregion( bombregion * br , bomb b)
 	}
 
 }
-
-
-
-//Checks if the current reward is already a reward from i-1 to 0 
+ 
+/* Purpose  :   Checks if coord x1 is near coord x2 , two coords are near iff the manhattan distance b/w their centers is
+                <= 2
+   Inputs   :   x1      -    Coordinate pair 1
+            :   x2      -    Coordinate pair 2
+   Output   :    1      -    if x1 and x2 are near each other
+                 0      -    otherwise
+ */
 
 int coord_near(coord x1, coord x2)
 {
@@ -86,11 +106,18 @@ int coord_near(coord x1, coord x2)
 	disty+=(x1.y>x2.y)?(x1.y-x2.y):(x2.y-x1.y);
 	if (disty>HEIGHT/2)
 		disty = HEIGHT-disty;
-	if (  distx+disty <=3 )
+	if (  distx+disty <=2 )
 	return 1;
 	return 0; 
 }
 
+
+/* Purpose  :   Checks if the potential reward at position i is near the already existant rewards
+   Inputs   :   r       -    Reward structure
+            :   i       -    Position of new potential reward
+   Output   :    1      -    if reward ar position i is near any reward in positions 0 to i-1
+                 0      -    otherwise
+ */
 
 int is_coord_near_reward ( reward * r , int i )
 {
@@ -101,8 +128,13 @@ int is_coord_near_reward ( reward * r , int i )
     return 0;
 }
 
-//INITIALIZE THE REWARDS ATR START OF GAME 
-coord init_reward ( Queue * s1 , Queue * s2 , reward * r)
+/* Purpose  :   Initialize the rewards at the starting of the game depending on the snakes are 
+   Inputs   :   s1       -    Snake 1
+            :   s2       -    Snake 2
+            :   *r       -    Reward structure
+ */
+ 
+void init_reward ( Queue * s1 , Queue * s2 , reward * r)
 {
     int i = 0 ;
     coord temp;
@@ -120,6 +152,14 @@ coord init_reward ( Queue * s1 , Queue * s2 , reward * r)
 }
 
 
+/* Purpose  :   This fucntion is called when a reward gets eaten and generates a new reward in it's liu 
+   Inputs   :   s1             -    Snake 1
+            :   s2             -    Snake 2
+            :   *r             -    Reward structure
+            :   reawardeaten   -    Position of eaten reward in array of rewards
+ */
+ 
+
 void mk_reward(Queue *s1, Queue *s2, reward * r, int rewardeaten)
 {
 	int i;
@@ -136,18 +176,27 @@ void mk_reward(Queue *s1, Queue *s2, reward * r, int rewardeaten)
         }
            while (  queue_search ( s1,temp ) || queue_search ( s2,temp ) || is_coord_near_reward ( r , r->rewnum - 1 ) ) ;
            
-//	r->rewcoord[rewardeaten].x = ;
-//	r->rewcoord[rewardeaten].y = y;
 }
 
+
+/* Purpose  :   Checks whether a given coordinate is inside the bomb region
+   Inputs   :   c           -    Coordinate to be checked
+            :   br          -    Bomb region
+ */
+ 
 int coord_in_bomb(coord c, bombregion br)
 {
 	int i;
-	for(i=0;i<SIZEBOMBREGION;i++)
+	for( i = 0 ; i < SIZEBOMBREGION ; i++ )
 	if( br.array[i].x == c.x && br.array[i].y == c.y )
 	return 1;
 	return 0;
 }
+
+
+/* Purpose  :   Initializes the points at the starting of the game
+   Output   :   *p          -   structure of points
+ */
 
 Points* mk_points(){
 	Points* p=malloc(sizeof(Points));
@@ -157,13 +206,32 @@ Points* mk_points(){
 	return p;
 }
 
+
+/* Purpose  :   Get the current points of both players
+   Inputs   :    s1  -          snake 1
+            :    s2  -          snake 2
+            :    *p  -          Points structure pointer
+ */
+
 void get_points(Queue* s1,Queue* s2,Points* p){
 	p->s1_points=queue_size(s1);
 	p->s2_points=queue_size(s2);
 
 }
 
-/*Print the current status of the screen */
+
+/* Purpose  :   Dump the current posotions of bomb rewards and snakes onto the screen
+   Inputs   :    s1         -          snake 1
+            :    s2         -          snake 2
+            :    *p         -          Points structure pointer
+            :    *r         -          Rewards structure pointer
+            :    *b         -          Pointer to bomb
+            :    * call_no  -          Call number to printscreen used to decide which stage of bomb are we on..
+            :    *br        -          Bomb region
+            :    ptime      -          Current time
+            :    stime      -          Starting time of game
+            :    mtime      -          maximum time of the game( in minutes )
+ */         
 
 void printscreen(Queue * s1, Queue * s2, reward  *r , bomb * b , int * call_no, bombregion * br, Points* p,double ptime,double stime,int mtime)
 {
@@ -282,8 +350,14 @@ void printscreen(Queue * s1, Queue * s2, reward  *r , bomb * b , int * call_no, 
 	refresh();
 }
 
-/*To determine whether the game has ended and if it has print the appropropriate message */
 
+/* Purpose  :   Ending game printscreen 
+   Inputs   :    s1         -          snake 1
+            :    s2         -          snake 2
+            :    *p         -          Points
+            :    col        -          whether collision happende and if yes who collided into whom
+ */   
+ 
 void end_game( int col , Queue * s1 , Queue * s2, Points* p)
 {
 		if ( col == 0)
@@ -308,16 +382,22 @@ void end_game( int col , Queue * s1 , Queue * s2, Points* p)
 		else if ( col==-1 )	
 			mvprintw(HEIGHT/2, WIDTH/2, "Snake 1 wins!");
 		
-		timeout(5000);
-		getch();		
+		sleep(1);
+        timeout(4000);
+        getch();		
 		clrtoeol();
 		refresh();
 		endwin();
 		exit(0);
 }
 
-/* To modify the current snake based on it's relationship with the current bomb position Deals with
-   	memory and hence can give seg faults if not written properly :P */
+/* Purpose  :   To modify the current snake based on it's relationship with the current bomb position 
+   Inputs   :    s1         -          snake 1
+            :    s2         -          snake 2
+            :    *br        -          Bomb region
+   Output   :    1          -          if snake is being nodified
+                 0          -          otherwise 
+ */         
 
 int modify_snake(Queue* s1,bomb *b,bombregion br)
 {
@@ -429,10 +509,20 @@ int modify_snake(Queue* s1,bomb *b,bombregion br)
 	}
 	return 0;
 }
-//reqrite this urgently
+
+
+/* Purpose  :   Print the exploding bomb
+   Inputs   :    s1             -          snake 1
+            :    s2             -          snake 2
+            :    *p             -          Points
+            :    *call_no       -          Keep a track of what tage of bomb printing are we on
+            :    *b             -          Bomb 
+            :     br            -          Bomb region
+ */   
+ 
+
 int explode(Queue *s1, Queue *s2, bomb *b, int *call_no,bombregion br, Points* p)
 {
-//modify_snake(s1,b);
 
 	int i, j;
 	if (*call_no>=0 && *call_no <=0)
@@ -551,6 +641,12 @@ int explode(Queue *s1, Queue *s2, bomb *b, int *call_no,bombregion br, Points* p
 }
 
 
+/* Purpose  :   Checks whether snake 1 collided with snake 2 or vice versa or neither or whether both collided with each other 
+   Inputs   :    s1         -          snake 1
+            :    s2         -          snake 2
+            :    dir1       -          direction of snake 1
+            :    dir2       -          direction of snake 2
+ */   
 
 int collide (Queue *s1, Queue *s2, char dir1, char dir2)
 {
@@ -605,7 +701,3 @@ int collide (Queue *s1, Queue *s2, char dir1, char dir2)
 	}
 	return 0;
 }	
-
-
-
-

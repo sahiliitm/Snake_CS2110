@@ -37,21 +37,30 @@ coord make_coord(int x,int y);
 void init_bombregion(bombregion * br,bomb b);
 
 void mk_reward(Queue *s1, Queue *s2, reward *r, int x);
+
 Points* mk_points();
 
 void get_points(Queue* s1,Queue* s2,Points* p);
 
 int coord_in_bomb(coord c, bombregion br);
+
 void printscreen(Queue *s1, Queue *s2,reward *r,bomb *b, int * call_no, bombregion * br, Points* p,double x,double y, int z);
+
 void end_game(int col ,Queue *s1 , Queue *s2, Points* p);
+
 int modify_snake(Queue* s1,bomb *b,bombregion br);
+
 int explode(Queue *s1, Queue *s2, bomb *b, int *call_no,bombregion br, Points* p);
+
 int collide (Queue *s1, Queue *s2, char dir1, char dir2);
+
 int correct_value(int x, int dimention );
 
 int coord_near(coord x1, coord x2);
+
 int is_coord_near_reward ( reward * r , int i );
-coord init_reward ( Queue * s1 , Queue * s2 , reward * r );
+
+void init_reward ( Queue * s1 , Queue * s2 , reward * r );
 
 #endif
 
