@@ -299,7 +299,7 @@ int auto_move(Queue *s1, Queue *s2, char *snake1dir, reward *rew, bomb *b, bombr
 		{
 			if ((rew->rewcoord[i].x==new_head.x)&&(rew->rewcoord[i].y==new_head.y))
 			{
-				mk_reward(s1, s2, rew, i);
+				rew = mk_reward(s1, s2, rew, i);
 				p->s1_points++;
 				flag=1;
 				break;
@@ -416,7 +416,7 @@ int play_one(Queue *s1, Queue *s2, coord *snake2, char *snake2dir, reward *r,Poi
 		{
 			if ((r->rewcoord[i].x==snake2->x)&&(r->rewcoord[i].y==snake2->y))
 			{
-				mk_reward(s1, s2, r, i);
+				r = mk_reward(s1, s2, r, i);
 				p->s2_points++;
 				flag=1;
 				break;

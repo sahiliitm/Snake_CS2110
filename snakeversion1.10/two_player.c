@@ -174,7 +174,7 @@ int play(Queue *s1, Queue *s2, coord* snake1, coord *snake2, char *snake1dir, ch
 		{
 			if ((r->rewcoord[i].x==snake2->x)&&(r->rewcoord[i].y==snake2->y))
 			{
-				mk_reward(s1, s2, r, i);
+				r = mk_reward(s1, s2, r, i);
 				p->s2_points++;
 				flag=1;
 				break;
@@ -183,16 +183,13 @@ int play(Queue *s1, Queue *s2, coord* snake1, coord *snake2, char *snake1dir, ch
 		//If snake2 has not eaten reward, then pop out its tail from queue:
 		if (flag==0)
 			s2 = queue_pop(s2);
-		else
-			check=i;
 		flag=0;
+		coord s1_head = get_head(s1);
 		for (i=0; i<r->rewnum; i++)
 		{
-			if (i==check)
-				continue;
-			if ((r->rewcoord->x==snake1->x)&&(r->rewcoord->y==snake1->y))
+			if ((r->rewcoord[i].x==snake1->x)&&(r->rewcoord[i].y==snake1->y))
 			{
-				mk_reward(s1, s2, r, i);
+				r = mk_reward(s1, s2, r, i);
 				p->s1_points++;
 				flag=1;
 				break;

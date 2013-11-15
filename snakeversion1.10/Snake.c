@@ -160,7 +160,7 @@ void init_reward ( Queue * s1 , Queue * s2 , reward * r)
  */
  
 
-void mk_reward(Queue *s1, Queue *s2, reward * r, int rewardeaten)
+reward * mk_reward(Queue *s1, Queue *s2, reward * r, int rewardeaten)
 {
 	int i;
 	coord temp;
@@ -175,7 +175,7 @@ void mk_reward(Queue *s1, Queue *s2, reward * r, int rewardeaten)
             r->rewcoord[r->rewnum-1].y = temp.y ;
         }
            while (  queue_search ( s1,temp ) || queue_search ( s2,temp ) || is_coord_near_reward ( r , r->rewnum - 1 ) ) ;
-           
+    return r;       
 }
 
 
@@ -253,30 +253,30 @@ void printscreen(Queue * s1, Queue * s2, reward  *r , bomb * b , int * call_no, 
     			    if (   (         ((int)(ptime-stime) %60000) / 500    )    % 2 == 0 ) 
 	    		    {
 	    			    attron(COLOR_PAIR(13));
-	    			    mvprintw(r->rewcoord[k].y,correct_value( r->rewcoord[k].x-2,WIDTH), "--");
-	    			    mvprintw(r->rewcoord[k].y, correct_value(r->rewcoord[k].x+1,WIDTH), "--");
-	    			    mvprintw(  correct_value( r->rewcoord[k].y-1,HEIGHT),correct_value( r->rewcoord[k].x+1,WIDTH), "\\");
-	    			    mvprintw( correct_value( r->rewcoord[k].y-1,HEIGHT),correct_value( r->rewcoord[k].x-1,WIDTH), "/");
-	    			    mvprintw( correct_value( r->rewcoord[k].y+1,HEIGHT),correct_value( r->rewcoord[k].x-1,WIDTH), "\\");
-	    			    mvprintw( correct_value(r->rewcoord[k].y+1,HEIGHT),correct_value( r->rewcoord[k].x+1,WIDTH), "/");
+	    			    mvprintw(r->rewcoord[k].y,correct_value( r->rewcoord[k].x-2,WIDTH+1), "--");
+	    			    mvprintw(r->rewcoord[k].y, correct_value(r->rewcoord[k].x+1,WIDTH+1), "--");
+	    			    mvprintw(  correct_value( r->rewcoord[k].y-1,HEIGHT+1),correct_value( r->rewcoord[k].x+1,WIDTH+1), "\\");
+	    			    mvprintw( correct_value( r->rewcoord[k].y-1,HEIGHT+1),correct_value( r->rewcoord[k].x-1,WIDTH+1), "/");
+	    			    mvprintw( correct_value( r->rewcoord[k].y+1,HEIGHT+1),correct_value( r->rewcoord[k].x-1,WIDTH+1), "\\");
+	    			    mvprintw( correct_value(r->rewcoord[k].y+1,HEIGHT+1),correct_value( r->rewcoord[k].x+1,WIDTH+1), "/");
 	    			    attron(COLOR_PAIR(9));
-	    			    mvprintw( correct_value( r->rewcoord[k].y-1,HEIGHT), r->rewcoord[k].x, "v");					
-        				mvprintw(  correct_value(r->rewcoord[k].y+1,HEIGHT), r->rewcoord[k].x, "^");			
+	    			    mvprintw( correct_value( r->rewcoord[k].y-1,HEIGHT+1), r->rewcoord[k].x, "v");					
+        				mvprintw(  correct_value(r->rewcoord[k].y+1,HEIGHT+1), r->rewcoord[k].x, "^");			
 	        			attron(COLOR_PAIR(5));
 	        			mvprintw(r->rewcoord[k].y, r->rewcoord[k].x, "O");
 	        		}	
 	        		else
 	        		{
 	        			attron(COLOR_PAIR(13));
-	        			mvprintw(r->rewcoord[k].y,correct_value( r->rewcoord[k].x-1,WIDTH), "-");
-	        			mvprintw(r->rewcoord[k].y, correct_value(r->rewcoord[k].x+1,WIDTH), "-");
-	        			mvprintw(  correct_value( r->rewcoord[k].y+1,HEIGHT),correct_value( r->rewcoord[k].x+1,WIDTH), "\\");
-	        			mvprintw( correct_value( r->rewcoord[k].y+1,HEIGHT),correct_value( r->rewcoord[k].x-1,WIDTH), "/");
-	        			mvprintw( correct_value( r->rewcoord[k].y-1,HEIGHT),correct_value( r->rewcoord[k].x-1,WIDTH), "\\");
-	        			mvprintw( correct_value(r->rewcoord[k].y-1,HEIGHT),correct_value( r->rewcoord[k].x+1,WIDTH), "/");
+	        			mvprintw(r->rewcoord[k].y,correct_value( r->rewcoord[k].x-1,WIDTH+1), "-");
+	        			mvprintw(r->rewcoord[k].y, correct_value(r->rewcoord[k].x+1,WIDTH+1), "-");
+	        			mvprintw(  correct_value( r->rewcoord[k].y+1,HEIGHT+1),correct_value( r->rewcoord[k].x+1,WIDTH+1), "\\");
+	        			mvprintw( correct_value( r->rewcoord[k].y+1,HEIGHT+1),correct_value( r->rewcoord[k].x-1,WIDTH+1), "/");
+	        			mvprintw( correct_value( r->rewcoord[k].y-1,HEIGHT+1),correct_value( r->rewcoord[k].x-1,WIDTH+1), "\\");
+	        			mvprintw( correct_value(r->rewcoord[k].y-1,HEIGHT+1),correct_value( r->rewcoord[k].x+1,WIDTH+1), "/");
 	           			attron(COLOR_PAIR(9));
-	        			mvprintw( correct_value( r->rewcoord[k].y+1,HEIGHT), r->rewcoord[k].x, "v");				
-	        			mvprintw(  correct_value(r->rewcoord[k].y-1,HEIGHT), r->rewcoord[k].x, "^");			
+	        			mvprintw( correct_value( r->rewcoord[k].y+1,HEIGHT+1), r->rewcoord[k].x, "v");				
+	        			mvprintw(  correct_value(r->rewcoord[k].y-1,HEIGHT+1), r->rewcoord[k].x, "^");			
 	        			attron(COLOR_PAIR(5));
 	        			mvprintw(r->rewcoord[k].y, r->rewcoord[k].x, "o");
 	        		} 

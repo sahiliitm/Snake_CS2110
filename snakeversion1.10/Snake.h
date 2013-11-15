@@ -36,7 +36,7 @@ coord make_coord(int x,int y);
 
 void init_bombregion(bombregion * br,bomb b);
 
-void mk_reward(Queue *s1, Queue *s2, reward *r, int x);
+reward * mk_reward(Queue *s1, Queue *s2, reward *r, int x);
 
 Points* mk_points();
 
